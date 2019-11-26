@@ -29,15 +29,21 @@ def generate_df(rows, **kwargs):
     return DataFrame(data, columns=columns)
 
 
+def merge(df):
+    values = [v for v in unique(df.values.ravel("K")).tolist() if v]
+
+    # return "|".join([v for v in values if v])
+    return "[\"{}\"]".format("\", \"".join(df))
+
+
 def main():
     df1 = generate_df(1000, ric="ric", ric2="ric2", isin="isin", isin2="isin2")
     identifiers = {"ric": ["ric", "ric2"], "isin": ["isin", "isin2"]}
-    df1["x"] = ""
 
     for i, cols in identifiers.items():
-        df1[i] = df1.groupby(["source", "symbol"])[cols].transform(" ".join)
+        df1[i] = df1.groupby(["source", "symbol"])[cols].transform(merge)
     
-    print(df1["ric"])
+    print(df1[[i for i in identifiers.keys()]])
 
 
 if __name__ == "__main__":
