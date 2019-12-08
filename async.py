@@ -12,7 +12,7 @@ class AsyncClass:
 
     @coroutine
     async def _collect_urls(self, urls):
-        with ThreadPoolExecutor(max_workers=20) as executor:
+        with ThreadPoolExecutor(max_workers=3) as executor:
             loop = get_event_loop()
             tasks = [
                 loop.run_in_executor(executor, self._call_url, u) for u in urls
@@ -21,8 +21,14 @@ class AsyncClass:
             await gather(*tasks)
 
     def _call_url(self, url):
-        response = requests.get(url)
-        self.response.append(f"{url} returned {response.status_code}")
+        print(f"calling {url}...")
+        try:
+            response = requests.get(url)
+            self.response.append(f"{url} returned {response.status_code}")
+        except Exception:
+            print(f"--ISSUE WITH {url}--")
+
+        return True
 
     def main(self):
         loop = get_event_loop()
@@ -33,3 +39,16 @@ class AsyncClass:
             print(response)
 
         print("done")
+
+
+if __name__ == "__main__":
+    urls = [
+        "https://www.google.co.uk",
+        "https://www.facebook.com",
+        "https://www.twitter.com",
+        "https://www.bbc.co.uk",
+        "https://www.skysports.com"
+    ]
+
+    asy = AsyncClass(urls)
+    asy.main()
