@@ -5,28 +5,31 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 class AsyncClass:
-    def __init__(self, urls):
+    def __init__(self, urls, repeat=2):
         self.urls = urls
+        self.repeat = repeat
 
-        self.response = []
+        self.response = 0
 
     @coroutine
     async def _collect_urls(self, urls):
-        with ThreadPoolExecutor(max_workers=3) as executor:
+        with ThreadPoolExecutor(max_workers=20) as executor:
             loop = get_event_loop()
             tasks = [
-                loop.run_in_executor(executor, self._call_url, u) for u in urls
+                loop.run_in_executor(executor, self._call_url, u, i)
+                for u in urls
+                    for i in range(self.repeat)
             ]
 
             await gather(*tasks)
 
-    def _call_url(self, url):
-        print(f"calling {url}...")
+    def _call_url(self, url, n):
         try:
             response = requests.get(url)
-            self.response.append(f"{url} returned {response.status_code}")
+            print(f"{url}:[{n}] returned {response.status_code}")
+            self.response += 1
         except Exception:
-            print(f"--ISSUE WITH {url}--")
+            print(f"--ISSUE WITH {url}:[{n}]--")
 
         return True
 
@@ -35,10 +38,7 @@ class AsyncClass:
         future = ensure_future(self._collect_urls(self.urls))
         loop.run_until_complete(future)
 
-        for response in self.response:
-            print(response)
-
-        print("done")
+        print(f"called {self.response} urls")
 
 
 if __name__ == "__main__":
@@ -50,5 +50,5 @@ if __name__ == "__main__":
         "https://www.skysports.com"
     ]
 
-    asy = AsyncClass(urls)
+    asy = AsyncClass(urls, repeat=10)
     asy.main()
