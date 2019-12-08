@@ -3,7 +3,7 @@ from unittest.mock import Mock, call, patch
 
 from asyncio import get_event_loop
 
-from async import AsyncClass
+from testasync import AsyncClass
 
 
 def AsyncMock(*args, **kwargs):
@@ -21,9 +21,9 @@ def _run(coro):
 
 
 class AsyncClassTests(TestCase):
-    @patch(f"async.ThreadPoolExecutor.__enter__")
-    @patch(f"async.gather")
-    @patch(f"async.get_event_loop")
+    @patch(f"testasync.ThreadPoolExecutor.__enter__")
+    @patch(f"testasync.gather")
+    @patch(f"testasync.get_event_loop")
     def test_collect_urls(self, mock_event_loop, mock_gather, mock_executor):
         mock_gather.side_effect = AsyncMock
         mock_event_loop.return_value.run_in_executor.side_effect = ["task1", "task2"]
